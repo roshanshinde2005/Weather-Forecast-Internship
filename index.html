@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vidarbha Rainfall — Weekly Analysis 2015–2025</title>
+<meta name="description" content="Weekly rainfall analysis for Vidarbha districts 2015–2025 with growth stage water requirement comparisons for Rice, Soybean and Pigeonpea.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
@@ -26,7 +27,62 @@
   .legend-line { width: 24px; height: 3px; border-radius: 2px; }
   .legend-dot-line { width: 8px; height: 8px; border-radius: 50%; margin-left: -16px; }
 
-  .year-nav { position: sticky; top: 0; z-index: 10; background: rgba(13,17,23,0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 0.55rem 2rem; overflow-x: auto; }
+  /* ===== TOP SECTION NAVBAR ===== */
+  .top-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,17,23,0.96); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .top-nav-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem; gap: 1rem;
+  }
+  .top-nav-brand {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; font-weight: 600;
+    color: #38bdf8; white-space: nowrap; padding: 0.75rem 0; flex-shrink: 0;
+    letter-spacing: 0.05em;
+  }
+  .top-nav-tabs {
+    display: flex; gap: 0.15rem; overflow-x: auto; padding: 0.45rem 0;
+    scrollbar-width: none;
+  }
+  .top-nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    background: none; border: none; color: var(--muted);
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 0.76rem;
+    padding: 0.38rem 0.9rem; border-radius: 6px; cursor: pointer;
+    transition: all 0.18s; white-space: nowrap; flex-shrink: 0;
+    border: 1px solid transparent;
+  }
+  .nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+  .nav-tab.active {
+    background: rgba(56,189,248,0.12); color: #38bdf8;
+    border-color: rgba(56,189,248,0.3); font-weight: 600;
+  }
+  .hamburger {
+    display: none; background: none; border: 1px solid var(--border);
+    color: var(--muted); padding: 0.35rem 0.55rem; border-radius: 6px;
+    cursor: pointer; font-size: 1rem; flex-shrink: 0;
+  }
+  .mobile-menu {
+    display: none; flex-direction: column; gap: 0.3rem;
+    padding: 0.6rem 1.5rem 0.8rem; border-top: 1px solid var(--border);
+    background: rgba(13,17,23,0.98);
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu .nav-tab { text-align: left; border-radius: 6px; width: 100%; }
+  @media (max-width: 768px) {
+    .top-nav-tabs { display: none; }
+    .hamburger { display: block; }
+  }
+
+  /* ===== SECTION WRAPPERS ===== */
+  .section-panel { display: none; }
+  .section-panel.active { display: block; }
+
+  /* ===== YEAR SUB-NAV ===== */
+  .year-nav { position: sticky; top: 52px; z-index: 10; background: rgba(13,17,23,0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 0.55rem 2rem; overflow-x: auto; }
   .year-nav-inner { display: flex; gap: 0.3rem; max-width: 1400px; margin: 0 auto; width: max-content; }
   .year-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.73rem; padding: 0.28rem 0.7rem; border-radius: 4px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .year-btn:hover { color: var(--text); border-color: #58a6ff; }
@@ -69,9 +125,66 @@
   .tt-total span:last-child { font-family: 'IBM Plex Mono', monospace; color: var(--text); font-weight: 600; }
 
   footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.76rem; border-top: 1px solid var(--border); margin-top: 1rem; line-height: 1.8; }
+
+  /* ===== GROWTH STAGE COMPARISON SECTION ===== */
+  .stage-grid {
+    max-width: 1400px; margin: 0 auto; padding: 2rem;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(580px, 1fr)); gap: 1.5rem;
+  }
+  .stage-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.4rem 1.6rem 1.2rem; display: flex; flex-direction: column; gap: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .stage-card:hover { border-color: #30363d; box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+  .stage-card-header { display: flex; flex-direction: column; gap: 0.3rem; }
+  .stage-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    padding: 0.22rem 0.6rem; border-radius: 4px; color: var(--muted); width: fit-content;
+  }
+  .stage-title { font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+  .stage-meta { font-size: 0.75rem; color: var(--muted); }
+  .stage-legend {
+    display: flex; gap: 1.2rem; flex-wrap: wrap;
+    font-size: 0.75rem; padding: 0.4rem 0;
+  }
+  .stage-legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .stage-legend-swatch { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .stage-chart-wrap { position: relative; height: 260px; }
 </style>
 </head>
 <body>
+
+<!-- ===== TOP NAVBAR ===== -->
+<nav class="top-nav" id="topNav">
+  <div class="top-nav-inner">
+    <span class="top-nav-brand">&#9928; Vidarbha Rainfall</span>
+    <div class="top-nav-tabs" id="navTabs">
+      <button class="nav-tab active" data-section="sec-weekly-all">Weekly · All Years</button>
+      <button class="nav-tab" data-section="sec-monsoon">Monsoon (W24–40)</button>
+      <button class="nav-tab" data-section="sec-postmonsoon">Post-Monsoon (W40–43)</button>
+      <button class="nav-tab" data-section="sec-premonsoon">Pre-Monsoon (W22–26)</button>
+      <button class="nav-tab" data-section="sec-mai">MAI Index</button>
+      <button class="nav-tab" data-section="sec-rice">Rice · Growth Stages</button>
+      <button class="nav-tab" data-section="sec-soybean">Soybean · Growth Stages</button>
+      <button class="nav-tab" data-section="sec-pigeonpea">Pigeonpea · Growth Stages</button>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Menu">&#9776;</button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="nav-tab active" data-section="sec-weekly-all">Weekly · All Years</button>
+    <button class="nav-tab" data-section="sec-monsoon">Monsoon (W24–40)</button>
+    <button class="nav-tab" data-section="sec-postmonsoon">Post-Monsoon (W40–43)</button>
+    <button class="nav-tab" data-section="sec-premonsoon">Pre-Monsoon (W22–26)</button>
+    <button class="nav-tab" data-section="sec-mai">MAI Index</button>
+    <button class="nav-tab" data-section="sec-rice">Rice · Growth Stages</button>
+    <button class="nav-tab" data-section="sec-soybean">Soybean · Growth Stages</button>
+    <button class="nav-tab" data-section="sec-pigeonpea">Pigeonpea · Growth Stages</button>
+  </div>
+</nav>
 
 <div id="tooltip">
   <div class="tt-header" id="tt-header"></div>
@@ -79,53 +192,106 @@
   <div class="tt-total"><span>Total (all districts)</span><span id="tt-total"></span></div>
 </div>
 
+<!-- ===== SECTION: Weekly All Years ===== -->
+<div class="section-panel active" id="sec-weekly-all">
 <header>
   <div class="eyebrow">Meteorological Weekly Data · Vidarbha Region · Maharashtra</div>
   <h1>Weekly Rainfall Analysis · 2015–2025</h1>
   <p>Weekly rainfall (mm) across four Vidarbha districts. Each chart covers one calendar year grouped into meteorological weeks.</p>
 </header>
-
 <div class="legend">
-  <div class="legend-item">
-    <div style="position:relative;width:24px;height:12px;display:flex;align-items:center">
-      <div class="legend-line" style="background:var(--akola);position:absolute;width:100%"></div>
-      <div class="legend-dot-line" style="background:var(--akola);position:absolute;left:8px"></div>
-    </div>
-    <span>Akola</span>
-  </div>
-  <div class="legend-item">
-    <div style="position:relative;width:24px;height:12px;display:flex;align-items:center">
-      <div class="legend-line" style="background:var(--chandrapur);position:absolute;width:100%"></div>
-      <div class="legend-dot-line" style="background:var(--chandrapur);position:absolute;left:8px"></div>
-    </div>
-    <span>Chandrapur</span>
-  </div>
-  <div class="legend-item">
-    <div style="position:relative;width:24px;height:12px;display:flex;align-items:center">
-      <div class="legend-line" style="background:var(--wardha);position:absolute;width:100%"></div>
-      <div class="legend-dot-line" style="background:var(--wardha);position:absolute;left:8px"></div>
-    </div>
-    <span>Wardha</span>
-  </div>
-  <div class="legend-item">
-    <div style="position:relative;width:24px;height:12px;display:flex;align-items:center">
-      <div class="legend-line" style="background:var(--washim);position:absolute;width:100%"></div>
-      <div class="legend-dot-line" style="background:var(--washim);position:absolute;left:8px"></div>
-    </div>
-    <span>Washim</span>
-  </div>
+  <div class="legend-item"><div style="position:relative;width:24px;height:12px;display:flex;align-items:center"><div class="legend-line" style="background:var(--akola);position:absolute;width:100%"></div><div class="legend-dot-line" style="background:var(--akola);position:absolute;left:8px"></div></div><span>Akola</span></div>
+  <div class="legend-item"><div style="position:relative;width:24px;height:12px;display:flex;align-items:center"><div class="legend-line" style="background:var(--chandrapur);position:absolute;width:100%"></div><div class="legend-dot-line" style="background:var(--chandrapur);position:absolute;left:8px"></div></div><span>Chandrapur</span></div>
+  <div class="legend-item"><div style="position:relative;width:24px;height:12px;display:flex;align-items:center"><div class="legend-line" style="background:var(--wardha);position:absolute;width:100%"></div><div class="legend-dot-line" style="background:var(--wardha);position:absolute;left:8px"></div></div><span>Wardha</span></div>
+  <div class="legend-item"><div style="position:relative;width:24px;height:12px;display:flex;align-items:center"><div class="legend-line" style="background:var(--washim);position:absolute;width:100%"></div><div class="legend-dot-line" style="background:var(--washim);position:absolute;left:8px"></div></div><span>Washim</span></div>
 </div>
-
 <nav class="year-nav"><div class="year-nav-inner" id="yearNav"></div></nav>
 <div class="grid" id="grid"></div>
+</div>
+
+<!-- ===== SECTION: Monsoon W24-40 ===== -->
+<div class="section-panel" id="sec-monsoon">
+<header>
+  <div class="eyebrow">Monsoon Window · Meteorological Weeks 24–40</div>
+  <h1>Weekly Rainfall Analysis · Weeks 24–40</h1>
+  <p>Zoomed into the core monsoon window (mid-June through early October) for a closer look at the wettest stretch of each year.</p>
+</header>
+<nav class="year-nav"><div class="year-nav-inner" id="yearNav2"></div></nav>
+<div class="grid" id="grid2"></div>
+</div>
+
+<!-- ===== SECTION: Post-Monsoon W40-43 ===== -->
+<div class="section-panel" id="sec-postmonsoon">
+<header>
+  <div class="eyebrow">Post-Monsoon Window · Meteorological Weeks 40–43</div>
+  <h1>Weekly Rainfall Analysis · Weeks 40–43</h1>
+  <p>Zoomed into the post-monsoon withdrawal period (early-to-mid October), when rainfall is typically minimal or absent across the region.</p>
+</header>
+<nav class="year-nav"><div class="year-nav-inner" id="yearNav3"></div></nav>
+<div class="grid" id="grid3"></div>
+</div>
+
+<!-- ===== SECTION: Pre-Monsoon W22-26 ===== -->
+<div class="section-panel" id="sec-premonsoon">
+<header>
+  <div class="eyebrow">Pre-Monsoon Window · Meteorological Weeks 22–26</div>
+  <h1>Weekly Rainfall Analysis · Weeks 22–26</h1>
+  <p>Zoomed into the pre-monsoon window (late May to late June), covering the monsoon's onset over the region.</p>
+</header>
+<nav class="year-nav"><div class="year-nav-inner" id="yearNav4"></div></nav>
+<div class="grid" id="grid4"></div>
+</div>
+
+<!-- ===== SECTION: MAI ===== -->
+<div class="section-panel" id="sec-mai">
+<header>
+  <div class="eyebrow">Moisture Adequacy Index · MAI = Weekly Rainfall ÷ PET</div>
+  <h1>MAI by Year · 2021–2025</h1>
+  <p>Weekly Moisture Adequacy Index, weeks 21–39. One chart per year, plus a combined view with all five years overlaid.</p>
+</header>
+<div class="grid" id="maiGrid"></div>
+<div class="grid" id="maiCombinedGrid" style="grid-template-columns: 1fr;"></div>
+</div>
+
+<!-- ===== SECTION: Rice Growth Stages ===== -->
+<div class="section-panel" id="sec-rice">
+<header>
+  <div class="eyebrow">Rice (Paddy) · Kharif Season · Chandrapur District · SMW 2015–2025</div>
+  <h1>Growth Stage Water Requirement vs Actual Rainfall</h1>
+  <p>5 growth stages of Rice (Paddy) — <strong style="color:#34d399">Water Required</strong> (constant) vs <strong style="color:#fb923c">Actual Rainfall</strong> (Chandrapur sum for the SMW week range) for each year 2015–2025.</p>
+</header>
+<div class="stage-grid" id="stageGrid"></div>
+</div>
+
+<!-- ===== SECTION: Soybean Growth Stages ===== -->
+<div class="section-panel" id="sec-soybean">
+<header>
+  <div class="eyebrow">Soybean · Kharif Season · Chandrapur District · SMW 2015–2025</div>
+  <h1>Soybean Growth Stage Water Requirement vs Actual Rainfall</h1>
+  <p>5 growth stages of Soybean (Kharif) — <strong style="color:#34d399">Water Required</strong> (constant) vs <strong style="color:#fb923c">Actual Rainfall</strong> (Chandrapur sum) · Sowing Window: SMW 24–26.</p>
+</header>
+<div class="stage-grid" id="soybeanGrid"></div>
+</div>
+
+<!-- ===== SECTION: Pigeonpea Growth Stages ===== -->
+<div class="section-panel" id="sec-pigeonpea">
+<header>
+  <div class="eyebrow">Pigeonpea (Tur) · Kharif Season · Chandrapur District · SMW 2015–2025</div>
+  <h1>Pigeonpea Growth Stage Water Requirement vs Actual Rainfall</h1>
+  <p>4 growth stages of Pigeonpea/Tur (Kharif) — <strong style="color:#34d399">Water Required</strong> (constant) vs <strong style="color:#fb923c">Actual Rainfall</strong> (Chandrapur sum) · Sowing Window: SMW 24–25 · Truncated at SMW 43.</p>
+</header>
+<div class="stage-grid" id="pigeonpeaGrid"></div>
+</div>
 
 <footer>
   Source: District meteorological station records &nbsp;·&nbsp; Chandrapur readings averaged across its 4 monitoring stations per week<br>
-  Hover over any chart to see per-district rainfall for that week
+  Growth stage water requirements: Rice (Paddy), Soybean, Pigeonpea (Tur) — Chandrapur District, Kharif Season
 </footer>
 
 <script>
 const DATA = {"2015":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[57.3,0.0,0.0,0.4,0.0,5.0,0.0,0.0,31.0,1.1,11.8,0.0,1.4,0.0,62.5,0.0,0.0,0.0,2.2,0.0,0.0,0.0,1.3,93.6,65.7,0.3,0.0,0.0,22.4,92.0,218.7,37.7,33.8,0.0,16.9,40.9,38.9,57.3,5.8,5.2,0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[30.43,0.0,0.0,0.1,0.0,1.25,0.0,0.0,32.38,0.53,8.5,0.0,0.6,7.0,31.23,0.55,1.32,5.9,5.83,1.05,0.0,10.5,40.67,89.6,79.35,7.93,0.0,3.8,19.9,72.58,106.47,68.05,38.75,0.4,16.35,24.55,68.75,44.12,1.45,1.3,0.0,0.05,1.25,4.67,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[9.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,62.5,0.0,17.1,0.0,0.0,0.0,8.4,2.2,0.0,3.4,0.8,4.2,0.0,0.0,10.0,31.5,151.5,11.8,0.0,9.3,25.7,197.1,165.5,36.0,57.2,0.2,7.7,56.5,42.1,117.9,0.0,0.0,0.0,0.0,0.0,18.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,36.0,0.0,0.0,0.0,0.0,0.0,24.0,0.0,0.0,0.0,0.0,0.0,0.0,4.0,120.0,49.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}},"2016":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.2,0.0,0.0,0.0,0.0,0.0,12.3,1.1,0.2,0.0,30.1,0.0,161.0,34.5,49.2,180.0,8.0,182.4,87.0,12.9,5.1,21.2,7.9,2.6,28.2,65.3,20.8,73.5,29.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,8.35,2.8,1.5,0.0,0.3,0.0,0.0,0.0,0.0,5.93,7.83,0.28,0.05,0.4,13.47,4.5,62.52,74.55,75.23,89.73,36.98,153.62,53.55,16.98,3.4,9.5,17.48,10.7,32.88,64.85,20.02,32.05,10.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,21.3,11.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.6,18.0,0.0,0.0,0.0,3.8,1.2,68.1,84.7,162.8,142.8,20.1,157.8,81.7,47.2,3.5,10.6,32.0,3.6,28.4,65.1,10.0,31.0,12.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}},"2017":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.9,54.4,2.9,10.9,68.8,25.2,4.8,2.4,34.5,30.8,67.4,3.2,34.3,23.0,11.8,4.4,32.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.25,0.55,0.0,0.0,0.0,0.0,0.0,0.0,3.95,2.85,6.78,27.9,21.32,41.52,66.6,36.7,71.95,18.0,66.12,54.12,39.2,26.25,13.95,49.95,44.65,31.75,6.93,46.2,17.52,4.55,17.48,10.58,0.47,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,15.8,4.6,0.0,3.6,23.6,46.0,26.4,42.7,96.0,12.6,10.3,102.9,39.6,7.0,25.8,51.6,12.5,27.8,3.4,87.0,38.3,1.4,15.6,0.2,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6.8,27.1,108.0,16.1,33.0,6.0,46.7,68.0,20.0,2.5,2.0,86.0,22.0,0.0,20.0,60.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}},"2018":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45],"rf":[3.7,0.0,7.8,0.0,0.0,0.0,0.0,1.1,0.0,0.0,0.0,0.5,0.3,0.0,17.4,105.1,0.0,98.6,109.0,61.6,125.3,53.9,24.9,6.4,2.9,138.8,61.6,3.3,0.8,0.0,67.4,0.0,0.0,0.0,0.0,0.0,4.7,3.7,0.0,4.3,0.0,0.0,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[6.42,0.0,2.6,0.0,0.0,0.0,8.07,0.37,0.0,0.0,3.9,0.17,0.1,2.7,10.73,47.27,13.6,64.03,60.6,25.77,77.29,65.63,110.6,63.83,43.39,91.27,75.83,53.97,57.5,39.37,34.9,34.3,27.3,43.0,21.1,7.7,2.9,43.5,27.17,1.43,0.0,0.0,0.0,0.0,2.97,4.5,7.55,0.0,0.0,3.8,2.4,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,19.8,0.0,0.0,0.0,1.9,0.0,0.0,0.0,14.8,10.6,0.0,9.8,0.0,0.0,0.2,21.3,98.6,26.0,8.6,116.0,147.7,65.4,12.6,18.6,0.0,46.6,58.4,81.6,36.0,23.1,0.0,125.7,77.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.8,2.4,0.0,0.0]},"washim":{"weeks":[1],"rf":[0.0]}},"2019":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.4,0.0,0.0,0.0,0.0,0.0,0.0,15.5,1.2,41.3,135.1,66.2,25.3,37.5,130.2,103.7,77.7,15.7,42.4,64.9,12.9,32.5,147.9,133.3,1.8,0.0,10.2,70.5,27.9,0.0,0.0,0.0,0.0,0.0,1.1,0.0,0.0,2.1]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,20.45,0.0,0.0,0.28,0.4,0.0,0.0,0.75,0.55,0.0,0.0,0.0,1.65,0.72,5.65,5.42,13.78,37.77,53.05,33.48,19.7,46.3,145.42,65.77,44.0,33.5,84.8,121.33,92.95,41.55,52.12,43.88,24.75,27.18,66.33,52.73,8.35,0.0,3.52,36.27,9.3,0.0,0.0,0.0,0.0,0.0,0.55,0.0,0.0,1.05]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,8.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.2,0.0,0.0,0.0,4.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.8,20.6,81.8,23.4,29.8,43.8,110.0,216.4,157.7,19.4,105.2,26.6,77.4,23.2,54.1,58.6,31.6,0.0,3.9,38.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.9,14.6,4.2,55.1,99.3,40.8,0.5,60.1,96.3,59.7,4.0,3.6,24.8,36.7,43.3,32.4,61.6,0.0,0.0,0.0,49.0,14.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}},"2020":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.2,2.2,0.0,4.2,8.3,1.6,0.0,0.0,0.0,0.0,2.4,1.1,0.0,0.4,14.8,74.7,0.4,38.8,25.6,78.8,86.3,15.6,49.6,36.5,100.7,43.3,28.1,26.3,41.5,28.0,13.1,0.0,37.7,4.2,1.4,0.0,0.0,0.0,3.8,0.0,0.0,0.3,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[6.07,1.87,0.0,0.13,0.47,0.0,0.0,0.0,1.07,3.73,8.93,2.93,8.77,1.13,0.0,0.0,4.0,0.0,5.2,13.67,0.0,32.8,45.27,86.1,11.03,80.9,81.37,87.97,83.2,54.47,70.03,49.47,81.3,49.63,49.43,49.9,56.33,100.33,27.4,5.2,35.7,10.33,1.2,0.0,0.0,0.0,5.33,0.0,0.0,0.1,0.0,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[23.4,5.6,0.0,0.4,1.4,0.0,0.0,0.0,0.0,9.0,26.8,4.6,18.0,1.8,0.0,0.0,12.0,0.0,13.2,24.4,0.0,20.8,11.4,48.1,18.6,37.6,65.4,96.8,71.2,72.0,104.2,41.0,34.6,65.4,47.2,1.6,47.8,116.0,7.6,10.6,22.4,22.8,2.2,0.0,0.0,0.0,12.2,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1],"rf":[0.0]}},"2021":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[2.3,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.4,0.0,0.0,2.7,0.0,0.0,0.0,0.0,13.4,0.8,14.8,107.8,73.0,13.1,15.3,18.0,91.7,225.4,53.0,18.2,1.4,74.4,29.2,65.2,99.1,13.8,57.0,59.2,25.5,0.0,82.6,0.0,0.0,0.0,0.0,2.2,0.2,0.0,0.0,0.0,38.1]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[2.33,4.95,0.0,1.0,29.25,17.5,1.07,0.0,5.0,18.75,1.05,28.52,2.33,5.67,2.08,19.75,3.28,2.35,0.53,4.55,1.07,10.1,51.15,61.4,25.23,30.17,39.33,33.43,98.13,21.9,6.07,29.07,30.33,47.27,73.87,51.93,23.4,40.47,19.73,8.5,7.83,27.53,0.0,0.0,0.0,0.0,0.73,0.07,0.0,0.0,0.0,12.7,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,4.3,0.0,0.0,0.0,2.4,35.4,0.0,0.0,0.0,0.0,0.8,7.2,2.1,4.8,2.8,25.6,88.6,18.6,34.6,64.2,100.0,8.6,69.0,12.7,0.0,85.8,16.6,112.6,156.4,56.7,56.4,64.4,0.0,0.0,23.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24],"rf":[7.0,19.0,0.0,4.0,117.0,70.0,0.0,0.0,20.0,75.0,1.8,66.3,9.3,22.7,5.6,79.0,12.3,2.2,0.0,0.0,0.7,0.0,0.0,0.0]}},"2022":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.1,5.9,0.0,0.0,0.0,0.0,0.0,0.0,0.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.8,5.6,158.1,28.2,128.6,142.9,123.2,111.9,24.2,18.7,70.1,34.8,5.0,32.5,5.7,112.1,54.9,0.0,46.2,31.0,10.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6.1,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[9.9,3.52,1.83,0.0,0.0,0.0,0.0,0.0,0.0,0.07,0.0,0.0,0.0,0.0,0.0,0.0,0.97,8.55,6.33,51.05,16.52,16.85,10.43,71.1,29.85,93.88,177.55,121.67,124.18,103.7,57.9,126.73,24.53,12.4,86.93,34.23,94.63,30.57,11.9,34.83,30.9,16.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9.15,0.0,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,14.0,1.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.2,7.8,3.8,3.2,33.2,16.6,49.0,242.2,218.4,307.6,164.9,23.7,227.2,38.5,0.0,42.4,75.5,147.7,36.8,1.8,22.5,49.6,40.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.2,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.9,34.2,25.3,203.0,58.3,55.2,8.9,44.9,31.3,0.2,66.2,9.9,0.0]}},"2023":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.0,11.4,0.0,0.0,20.9,17.2,1.4,18.6,3.8,0.0,0.0,0.0,0.0,8.9,1.0,1.8,18.3,112.6,196.8,204.0,7.0,12.0,4.2,30.8,0.8,15.2,21.0,21.6,74.4,27.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,56.0,0.0,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[1.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.25,3.1,0.75,2.25,9.88,21.35,25.32,21.6,6.35,0.0,0.0,0.5,0.75,12.05,18.35,69.6,53.67,85.05,111.25,114.25,38.45,45.75,6.3,81.83,20.85,31.8,78.75,26.38,49.38,16.32,0.0,0.0,10.7,0.0,0.0,7.85,1.25,1.65,35.77,0.73,0.0,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[5.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,3.0,0.0,16.6,1.4,15.7,67.8,21.6,0.0,0.0,0.0,3.0,0.0,5.0,21.0,1.2,94.4,47.2,195.6,140.8,40.4,0.0,215.8,3.4,61.8,122.0,42.7,123.1,37.4,0.0,0.0,6.8,0.0,0.0,0.0,0.0,1.4,51.3,2.2,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6.0,0.0,0.0,9.0,2.0,48.0,54.0,0.0,0.0,0.0,0.0,0.0,0.0,3.5,57.6,113.0,5.0,3.2,0.4,3.0,0.0,21.6,0.0,16.7,18.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,36.0,0.0,0.0,0.0,0.0,0.0]}},"2024":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,10.7,0.0,0.0,0.0,0.0,0.0,11.7,5.4,7.8,0.0,0.0,0.0,0.8,0.0,35.4,91.1,13.5,3.4,30.0,228.3,70.8,77.8,68.4,37.9,14.3,132.2,14.4,79.3,11.2,3.2,21.0,0.7,13.4,57.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,8.6,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.05,0.0,0.0,0.0,0.1,0.0,0.0,2.67,0.1,0.0,7.7,0.0,2.2,23.88,2.5,8.5,0.0,16.15,2.3,1.53,10.0,14.65,28.42,36.83,64.4,42.75,152.43,174.55,171.07,62.9,25.22,27.57,79.4,54.35,39.42,13.7,36.55,49.92,0.17,25.1,20.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.65,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,13.0,0.0,0.0,55.6,4.6,14.0,0.0,16.2,0.0,1.1,0.0,19.2,3.6,42.6,127.2,12.8,80.8,323.2,217.7,98.6,41.4,8.0,35.2,97.4,25.0,3.4,51.4,119.6,0.0,22.0,11.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,20.0,0.0,7.0,0.0,0.0,0.0,0.0,38.0,4.0,4.0,18.0,13.0,51.2,103.0,37.0,85.0,27.0,8.0,40.0,52.0,55.0,34.0,0.0,90.6,2.1,0.0,0.0,8.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}},"2025":{"akola":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5.6,0.0,0.0,0.0,0.0,2.8,20.0,95.7,141.3,0.5,38.9,15.2,109.3,68.1,16.7,8.1,45.3,3.8,16.2,112.2,20.2,109.7,29.7,64.0,1.0,75.4,0.0,0.0,0.0,39.8,36.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"chandrapur":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.95,4.6,0.0,0.5,11.15,3.25,13.65,93.78,45.23,14.47,25.05,24.7,108.62,81.67,50.23,14.88,116.47,5.8,35.75,198.95,32.5,114.28,46.88,113.9,11.15,100.3,20.0,0.0,0.0,18.8,45.05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"wardha":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,46.2,18.4,0.0,0.0,27.6,2.9,26.8,63.8,21.4,1.4,9.7,13.6,76.7,60.6,101.6,10.2,159.4,8.8,28.2,183.2,69.8,46.6,38.6,154.6,23.6,27.6,8.0,0.0,0.0,15.4,39.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"washim":{"weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"rf":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6.3,3.8,137.6,7.2,0.0,15.6,0.0,157.5,51.0,27.6,19.2,71.2,2.6,59.6,234.4,15.0,105.8,49.2,100.0,7.0,87.2,0.0,0.0,0.0,14.0,17.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]}}};
+
+const MAI_DATA = {"2021":{"weeks":[21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"mai":[0,0.156926,0.144592,3.340136,2.132936,1.921555,1.700176,4.531746,3.720397,7.063492,2.098813,0.39886,1.997395,0.963455,1.584416,4.007077,2.070773,2.714731,0.264719]},"2022":{"weeks":[21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"mai":[0,0,0,0.280112,3.620866,0.988185,4.78355,10.05544,6.169545,1.811847,0.822622,7.478992,3.654485,0.352355,0.672757,1.108742,4.306418,3.203719,0]},"2023":{"weeks":[21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"mai":[0,0,0,0,0.305481,2.073967,2.348612,6.839585,6.343168,4.089054,1.156285,0.198965,6.277311,4.695024,0.016142,5.054277,5.158489,2.41566,0.946591]},"2024":{"weeks":[21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"mai":[null,0,0.33462,1.536163,1.557806,1.281709,3.961477,4.916076,20.17431,10.40355,4.457455,3.413174,1.258503,2.401884,1.546218,2.680152,3.685545,0.040016,0.891775]},"2025":{"weeks":[21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"mai":[0,0,0.229538,0.827408,2.152918,4.06623,3.164048,4.435082,1.968417,9.926041,0.450351,3.743842,6.505102,1.595952,10.74319,0.477587,4.109701,0.76599,2.667242]}};
 
 const CITIES = ['akola','chandrapur','wardha','washim'];
 const CLABEL = { akola:'Akola', chandrapur:'Chandrapur', wardha:'Wardha', washim:'Washim' };
@@ -143,9 +309,12 @@ function rfMap(d) {
   return m;
 }
 
-function buildDatasets(yd) {
+function buildDatasets(yd, weekRange) {
   const maxW = Math.max(...Object.values(yd).flatMap(d => d.weeks));
-  const labels = Array.from({length: maxW}, (_,i) => i+1);
+  const minWeek = weekRange ? weekRange[0] : 1;
+  const maxWeek = weekRange ? weekRange[1] : maxW;
+  const labels = [];
+  for (let w = minWeek; w <= maxWeek; w++) labels.push(w);
   const datasets = CITIES.map(city => {
     const d = yd[city];
     const m = d ? rfMap(d) : {};
@@ -172,6 +341,14 @@ function annualTotal(yd, city) {
   return (yd[city]?.rf.reduce((a,b)=>a+b,0) ?? 0).toFixed(0);
 }
 
+function rangeTotal(yd, city, weekRange) {
+  const d = yd[city];
+  if (!d) return '0';
+  let sum = 0;
+  d.weeks.forEach((w,i) => { if (w >= weekRange[0] && w <= weekRange[1]) sum += d.rf[i]; });
+  return sum.toFixed(0);
+}
+
 function peakWeek(yd, city) {
   const d = yd[city];
   if (!d || !d.rf.length) return '—';
@@ -181,36 +358,38 @@ function peakWeek(yd, city) {
   return `W${d.weeks[idx]}`;
 }
 
-function buildCard(year) {
+function buildCard(year, idSuffix, weekRange) {
+  idSuffix = idSuffix || '';
   const yd = DATA[year];
   const card = document.createElement('div');
   card.className = 'card';
-  card.id = `card-${year}`;
+  card.id = `card-${year}${idSuffix}`;
 
-  const wetCity = CITIES.reduce((a,b) => (+annualTotal(yd,b) > +annualTotal(yd,a) ? b : a));
-  const totalAll = CITIES.reduce((s,c) => s + (yd[c]?.rf.reduce((a,b)=>a+b,0)||0), 0).toFixed(0);
+  const totalFn = weekRange ? (c => rangeTotal(yd, c, weekRange)) : (c => annualTotal(yd, c));
+  const wetCity = CITIES.reduce((a,b) => (+totalFn(b) > +totalFn(a) ? b : a));
+  const totalAll = CITIES.reduce((s,c) => s + (+totalFn(c)), 0).toFixed(0);
+  const subLabel = weekRange ? `Total (weeks ${weekRange[0]}–${weekRange[1]})` : 'All-district total';
 
   card.innerHTML = `
     <div class="card-header">
       <div class="card-left">
         <div class="card-year">${year}</div>
-        <div class="card-sub">Wettest district: <span style="color:${CCOLOR[wetCity]}">${CLABEL[wetCity]}</span> · All-district total: <span style="font-family:'IBM Plex Mono',monospace">${totalAll} mm</span></div>
+        <div class="card-sub">Wettest district: <span style="color:${CCOLOR[wetCity]}">${CLABEL[wetCity]}</span> · ${subLabel}: <span style="font-family:'IBM Plex Mono',monospace">${totalAll} mm</span></div>
       </div>
       <div class="card-stats">
         ${CITIES.map(c=>`
           <div class="stat">
-            <span class="stat-value" style="color:${CCOLOR[c]}">${annualTotal(yd,c)} mm</span>
+            <span class="stat-value" style="color:${CCOLOR[c]}">${totalFn(c)} mm</span>
             <span class="stat-label">${CLABEL[c]}</span>
           </div>`).join('')}
       </div>
     </div>
-    <div class="chart-wrap"><canvas id="chart-${year}"></canvas></div>
+    <div class="chart-wrap"><canvas id="chart-${year}${idSuffix}"></canvas></div>
   `;
   return card;
 }
 
-function showTooltip(e, year, weekIdx, datasets) {
-  const week = weekIdx + 1;
+function showTooltip(e, year, week, weekIdx, datasets) {
   ttHeader.textContent = `Year ${year} · Week ${week}`;
   let total = 0;
   ttRows.innerHTML = datasets.map(ds => {
@@ -244,10 +423,11 @@ function showTooltip(e, year, weekIdx, datasets) {
 
 function hideTooltip() { tooltip.classList.remove('visible'); }
 
-function renderChart(year) {
+function renderChart(year, idSuffix, weekRange) {
+  idSuffix = idSuffix || '';
   const yd = DATA[year];
-  const ctx = document.getElementById(`chart-${year}`).getContext('2d');
-  const { labels, datasets } = buildDatasets(yd);
+  const ctx = document.getElementById(`chart-${year}${idSuffix}`).getContext('2d');
+  const { labels, datasets } = buildDatasets(yd, weekRange);
 
   const chart = new Chart(ctx, {
     type: 'line',
@@ -277,7 +457,7 @@ function renderChart(year) {
       onHover: (e, elements) => {
         if (elements.length) {
           const idx = elements[0].index;
-          showTooltip(e.native, year, idx, datasets);
+          showTooltip(e.native, year, labels[idx], idx, datasets);
         } else {
           hideTooltip();
         }
@@ -285,18 +465,19 @@ function renderChart(year) {
     }
   });
 
-  document.getElementById(`chart-${year}`).addEventListener('mouseleave', hideTooltip);
+  document.getElementById(`chart-${year}${idSuffix}`).addEventListener('mouseleave', hideTooltip);
 }
 
 // BUILD
 const nav  = document.getElementById('yearNav');
 const grid = document.getElementById('grid');
 
+
 const allBtn = document.createElement('button');
 allBtn.className = 'year-btn active';
 allBtn.textContent = 'All years';
 allBtn.dataset.year = 'all';
-allBtn.addEventListener('click', () => setFilter('all'));
+allBtn.addEventListener('click', () => setFilter('all', nav, grid));
 nav.appendChild(allBtn);
 
 YEARS.forEach(year => {
@@ -304,7 +485,7 @@ YEARS.forEach(year => {
   btn.className = 'year-btn';
   btn.textContent = year;
   btn.dataset.year = year;
-  btn.addEventListener('click', () => setFilter(year));
+  btn.addEventListener('click', () => setFilter(year, nav, grid));
   nav.appendChild(btn);
 
   const card = buildCard(year);
@@ -312,13 +493,13 @@ YEARS.forEach(year => {
   renderChart(year);
 });
 
-function setFilter(year) {
-  document.querySelectorAll('.year-btn').forEach(b => b.classList.toggle('active', b.dataset.year === year));
-  document.querySelectorAll('.card').forEach(c => {
+function setFilter(year, navEl, gridEl) {
+  navEl.querySelectorAll('.year-btn').forEach(b => b.classList.toggle('active', b.dataset.year === year));
+  gridEl.querySelectorAll('.card').forEach(c => {
     c.classList.toggle('hidden', year !== 'all' && c.id !== `card-${year}`);
   });
   if (year !== 'all') {
-    const card = document.getElementById(`card-${year}`);
+    const card = gridEl.querySelector(`#card-${year}`);
     if (card) setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   }
 }
@@ -335,6 +516,724 @@ document.addEventListener('mousemove', e => {
     tooltip.style.top  = y + 'px';
   }
 });
+
+// SECOND SECTION: weeks 24-40
+const WEEK_RANGE = [24, 40];
+const ID_SUFFIX = '-w2440';
+const nav2  = document.getElementById('yearNav2');
+const grid2 = document.getElementById('grid2');
+
+const allBtn2 = document.createElement('button');
+allBtn2.className = 'year-btn active';
+allBtn2.textContent = 'All years';
+allBtn2.dataset.year = 'all';
+allBtn2.addEventListener('click', () => setFilter2('all'));
+nav2.appendChild(allBtn2);
+
+YEARS.forEach(year => {
+  const btn = document.createElement('button');
+  btn.className = 'year-btn';
+  btn.textContent = year;
+  btn.dataset.year = year;
+  btn.addEventListener('click', () => setFilter2(year));
+  nav2.appendChild(btn);
+
+  const card = buildCard(year, ID_SUFFIX, WEEK_RANGE);
+  grid2.appendChild(card);
+  renderChart(year, ID_SUFFIX, WEEK_RANGE);
+});
+
+function setFilter2(year) {
+  nav2.querySelectorAll('.year-btn').forEach(b => b.classList.toggle('active', b.dataset.year === year));
+  grid2.querySelectorAll('.card').forEach(c => {
+    c.classList.toggle('hidden', year !== 'all' && c.id !== `card-${year}${ID_SUFFIX}`);
+  });
+  if (year !== 'all') {
+    const card = document.getElementById(`card-${year}${ID_SUFFIX}`);
+    if (card) setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+}
+
+// THIRD SECTION: weeks 40-43 (post-monsoon)
+const WEEK_RANGE_3 = [40, 43];
+const ID_SUFFIX_3 = '-w4043';
+const nav3  = document.getElementById('yearNav3');
+const grid3 = document.getElementById('grid3');
+
+const allBtn3 = document.createElement('button');
+allBtn3.className = 'year-btn active';
+allBtn3.textContent = 'All years';
+allBtn3.dataset.year = 'all';
+allBtn3.addEventListener('click', () => setFilter3('all'));
+nav3.appendChild(allBtn3);
+
+YEARS.forEach(year => {
+  const btn = document.createElement('button');
+  btn.className = 'year-btn';
+  btn.textContent = year;
+  btn.dataset.year = year;
+  btn.addEventListener('click', () => setFilter3(year));
+  nav3.appendChild(btn);
+
+  const card = buildCard(year, ID_SUFFIX_3, WEEK_RANGE_3);
+  grid3.appendChild(card);
+  renderChart(year, ID_SUFFIX_3, WEEK_RANGE_3);
+});
+
+function setFilter3(year) {
+  nav3.querySelectorAll('.year-btn').forEach(b => b.classList.toggle('active', b.dataset.year === year));
+  grid3.querySelectorAll('.card').forEach(c => {
+    c.classList.toggle('hidden', year !== 'all' && c.id !== `card-${year}${ID_SUFFIX_3}`);
+  });
+  if (year !== 'all') {
+    const card = document.getElementById(`card-${year}${ID_SUFFIX_3}`);
+    if (card) setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+}
+
+// FOURTH SECTION: weeks 22-26 (pre-monsoon)
+const WEEK_RANGE_4 = [22, 26];
+const ID_SUFFIX_4 = '-w2226';
+const nav4  = document.getElementById('yearNav4');
+const grid4 = document.getElementById('grid4');
+
+const allBtn4 = document.createElement('button');
+allBtn4.className = 'year-btn active';
+allBtn4.textContent = 'All years';
+allBtn4.dataset.year = 'all';
+allBtn4.addEventListener('click', () => setFilter4('all'));
+nav4.appendChild(allBtn4);
+
+YEARS.forEach(year => {
+  const btn = document.createElement('button');
+  btn.className = 'year-btn';
+  btn.textContent = year;
+  btn.dataset.year = year;
+  btn.addEventListener('click', () => setFilter4(year));
+  nav4.appendChild(btn);
+
+  const card = buildCard(year, ID_SUFFIX_4, WEEK_RANGE_4);
+  grid4.appendChild(card);
+  renderChart(year, ID_SUFFIX_4, WEEK_RANGE_4);
+});
+
+function setFilter4(year) {
+  nav4.querySelectorAll('.year-btn').forEach(b => b.classList.toggle('active', b.dataset.year === year));
+  grid4.querySelectorAll('.card').forEach(c => {
+    c.classList.toggle('hidden', year !== 'all' && c.id !== `card-${year}${ID_SUFFIX_4}`);
+  });
+  if (year !== 'all') {
+    const card = document.getElementById(`card-${year}${ID_SUFFIX_4}`);
+    if (card) setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+}
+
+// MAI SECTION: 5 individual year charts + 1 combined chart
+const MAI_YEARS = Object.keys(MAI_DATA).sort();
+const MAI_YEAR_COLOR = {
+  '2021': '#38bdf8',
+  '2022': '#fb923c',
+  '2023': '#c084fc',
+  '2024': '#4ade80',
+  '2025': '#f472b6',
+};
+
+function buildMaiCard(year) {
+  const d = MAI_DATA[year];
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `mai-card-${year}`;
+
+  const validVals = d.mai.filter(v => v !== null);
+  const peakIdx = d.mai.indexOf(Math.max(...validVals));
+  const peakWeekNum = d.weeks[peakIdx];
+  const avg = (validVals.reduce((a,b)=>a+b,0) / validVals.length).toFixed(2);
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-left">
+        <div class="card-year" style="color:${MAI_YEAR_COLOR[year]}">${year}</div>
+        <div class="card-sub">Peak MAI: <span style="color:${MAI_YEAR_COLOR[year]}">${validVals.length ? Math.max(...validVals).toFixed(2) : '—'} (W${peakWeekNum})</span> · Avg MAI: <span style="font-family:'IBM Plex Mono',monospace">${avg}</span></div>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="mai-chart-${year}"></canvas></div>
+  `;
+  return card;
+}
+
+function renderMaiChart(year) {
+  const d = MAI_DATA[year];
+  const ctx = document.getElementById(`mai-chart-${year}`).getContext('2d');
+  const color = MAI_YEAR_COLOR[year];
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: d.weeks,
+      datasets: [{
+        label: year,
+        data: d.mai,
+        borderColor: color,
+        backgroundColor: color + '18',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: '#0d1117',
+        pointHoverBorderWidth: 2,
+        tension: 0.35,
+        fill: true,
+        spanGaps: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400, easing: 'easeOutQuart' },
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawTicks: false },
+          ticks: { color: '#7d8590', font: { family:"'IBM Plex Mono'", size: 9 }, maxTicksLimit: 10, maxRotation: 0, padding: 6 },
+          title: { display: true, text: 'Meteorological Week', color: '#555e69', font: { family:"'IBM Plex Sans'", size: 10 } }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)', drawTicks: false },
+          ticks: { color: '#7d8590', font: { family:"'IBM Plex Mono'", size: 9 }, maxTicksLimit: 6, padding: 6 },
+          title: { display: true, text: 'MAI', color: '#555e69', font: { family:"'IBM Plex Sans'", size: 10 } },
+          beginAtZero: true
+        }
+      },
+      onHover: (e, elements) => {
+        if (elements.length) {
+          const idx = elements[0].index;
+          const week = d.weeks[idx];
+          const val = d.mai[idx];
+          ttHeader.textContent = `Year ${year} · Week ${week}`;
+          ttRows.innerHTML = (val === null) ? `
+            <div class="tt-row">
+              <span class="tt-city"><span class="tt-dot" style="background:${color}"></span>MAI</span>
+              <span class="tt-val" style="color:var(--muted)">no data</span>
+            </div>` : `
+            <div class="tt-row">
+              <span class="tt-city"><span class="tt-dot" style="background:${color}"></span>MAI</span>
+              <span class="tt-val" style="color:${color}">${val.toFixed(3)}</span>
+            </div>`;
+          ttTotal.parentElement.style.display = 'none';
+          showMaiTooltip(e.native);
+        } else {
+          hideTooltip();
+        }
+      }
+    }
+  });
+
+  document.getElementById(`mai-chart-${year}`).addEventListener('mouseleave', hideTooltip);
+}
+
+function showMaiTooltip(e) {
+  const margin = 14;
+  const tw = 220, th = 110;
+  let x = e.clientX + margin;
+  let y = e.clientY - 60;
+  if (x + tw > window.innerWidth)  x = e.clientX - tw - margin;
+  if (y + th > window.innerHeight) y = window.innerHeight - th - margin;
+  if (y < 0) y = margin;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top  = y + 'px';
+  tooltip.classList.add('visible');
+}
+
+const maiGrid = document.getElementById('maiGrid');
+MAI_YEARS.forEach(year => {
+  const card = buildMaiCard(year);
+  maiGrid.appendChild(card);
+  renderMaiChart(year);
+});
+
+// Combined MAI chart: all 5 years overlaid
+function buildMaiCombinedCard() {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = 'mai-card-combined';
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-left">
+        <div class="card-year" style="font-size:1.2rem;">All Years Combined</div>
+        <div class="card-sub">MAI overlay · weeks 21–39 · 2021–2025</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height: 320px;"><canvas id="mai-chart-combined"></canvas></div>
+  `;
+  return card;
+}
+
+function renderMaiCombinedChart() {
+  const ctx = document.getElementById('mai-chart-combined').getContext('2d');
+  const allWeeks = MAI_DATA[MAI_YEARS[0]].weeks;
+
+  const datasets = MAI_YEARS.map(year => {
+    const d = MAI_DATA[year];
+    const color = MAI_YEAR_COLOR[year];
+    return {
+      label: year,
+      data: d.mai,
+      borderColor: color,
+      backgroundColor: color + '18',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointHoverBackgroundColor: color,
+      pointHoverBorderColor: '#0d1117',
+      pointHoverBorderWidth: 2,
+      tension: 0.35,
+      fill: false,
+      spanGaps: false,
+    };
+  });
+
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels: allWeeks, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400, easing: 'easeOutQuart' },
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawTicks: false },
+          ticks: { color: '#7d8590', font: { family:"'IBM Plex Mono'", size: 9 }, maxTicksLimit: 19, maxRotation: 0, padding: 6 },
+          title: { display: true, text: 'Meteorological Week', color: '#555e69', font: { family:"'IBM Plex Sans'", size: 10 } }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)', drawTicks: false },
+          ticks: { color: '#7d8590', font: { family:"'IBM Plex Mono'", size: 9 }, maxTicksLimit: 8, padding: 6 },
+          title: { display: true, text: 'MAI', color: '#555e69', font: { family:"'IBM Plex Sans'", size: 10 } },
+          beginAtZero: true
+        }
+      },
+      onHover: (e, elements) => {
+        if (elements.length) {
+          const idx = elements[0].index;
+          const week = allWeeks[idx];
+          ttHeader.textContent = `Week ${week}`;
+          ttRows.innerHTML = datasets.map(ds => {
+            const val = ds.data[idx];
+            const color = MAI_YEAR_COLOR[ds.label];
+            if (val === null || val === undefined) return `
+              <div class="tt-row">
+                <span class="tt-city"><span class="tt-dot" style="background:${color}"></span>${ds.label}</span>
+                <span class="tt-val" style="color:var(--muted)">no data</span>
+              </div>`;
+            return `
+              <div class="tt-row">
+                <span class="tt-city"><span class="tt-dot" style="background:${color}"></span>${ds.label}</span>
+                <span class="tt-val" style="color:${color}">${val.toFixed(3)}</span>
+              </div>`;
+          }).join('');
+          ttTotal.parentElement.style.display = 'none';
+          showMaiTooltip(e.native);
+        } else {
+          hideTooltip();
+        }
+      }
+    }
+  });
+
+  document.getElementById('mai-chart-combined').addEventListener('mouseleave', hideTooltip);
+}
+
+// Add a legend for the MAI combined chart
+const maiLegendDiv = document.createElement('div');
+maiLegendDiv.className = 'legend';
+maiLegendDiv.style.borderBottom = 'none';
+maiLegendDiv.innerHTML = MAI_YEARS.map(year => `
+  <div class="legend-item">
+    <div style="position:relative;width:24px;height:12px;display:flex;align-items:center">
+      <div class="legend-line" style="background:${MAI_YEAR_COLOR[year]};position:absolute;width:100%"></div>
+      <div class="legend-dot-line" style="background:${MAI_YEAR_COLOR[year]};position:absolute;left:8px"></div>
+    </div>
+    <span>${year}</span>
+  </div>
+`).join('');
+
+const maiCombinedGrid = document.getElementById('maiCombinedGrid');
+maiCombinedGrid.parentElement.insertBefore(maiLegendDiv, maiCombinedGrid);
+maiCombinedGrid.appendChild(buildMaiCombinedCard());
+renderMaiCombinedChart();
+
+// Restore the total row visibility when switching back to rainfall charts' tooltips
+document.querySelectorAll('canvas[id^="chart-"]').forEach(c => {
+  c.addEventListener('mouseenter', () => { ttTotal.parentElement.style.display = ''; });
+});
+
+// ===================================================================
+// GROWTH STAGE COMPARISON CHARTS
+// Rice (Paddy) – Kharif Season – Chandrapur District
+// 5 growth stages: Water Required (constant) vs Actual Rainfall (sum
+// of Chandrapur weekly RF over the SMW range), years 2015–2025
+// ===================================================================
+
+const GROWTH_STAGES = [
+  {
+    id: 'stage1',
+    label: 'Nursery / Seedbed Stage',
+    weeks: [23, 24, 25, 26],
+    waterReq: 120.5,
+    smwLabel: 'SMW 23–26',
+    dateRange: '4 June – 1 July',
+    duration: '4 Weeks',
+  },
+  {
+    id: 'stage2',
+    label: 'Transplantation & Tillering',
+    weeks: [27, 28, 29, 30, 31, 32],
+    waterReq: 345.0,
+    smwLabel: 'SMW 27–32',
+    dateRange: '2 July – 12 August',
+    duration: '6 Weeks',
+  },
+  {
+    id: 'stage3',
+    label: 'Panicle Initiation to Flowering',
+    weeks: [33, 34, 35, 36, 37],
+    waterReq: 480.2,
+    smwLabel: 'SMW 33–37',
+    dateRange: '13 August – 16 September',
+    duration: '5 Weeks',
+  },
+  {
+    id: 'stage4',
+    label: 'Grain Filling / Milky Stage',
+    weeks: [38, 39, 40],
+    waterReq: 264.3,
+    smwLabel: 'SMW 38–40',
+    dateRange: '17 September – 7 October',
+    duration: '3 Weeks',
+  },
+  {
+    id: 'stage5',
+    label: 'Maturity / Harvesting',
+    weeks: [41, 42],
+    waterReq: 40.0,
+    smwLabel: 'SMW 41–42',
+    dateRange: '8 October – 21 October',
+    duration: '2 Weeks',
+  },
+];
+
+const STAGE_YEARS = ['2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+const COLOR_WATER_REQ = '#34d399';   // emerald green
+const COLOR_ACTUAL    = '#fb923c';   // orange
+const COLOR_WATER_REQ_BG = '#34d39940';
+const COLOR_ACTUAL_BG    = '#fb923c40';
+
+// Helper: sum chandrapur RF for given week set in a given year
+function chandrapurStageRF(year, weekSet) {
+  const d = DATA[year]?.chandrapur;
+  if (!d) return 0;
+  let sum = 0;
+  d.weeks.forEach((w, i) => {
+    if (weekSet.includes(w)) sum += (d.rf[i] || 0);
+  });
+  return +sum.toFixed(2);
+}
+
+function buildStageCard(stage) {
+  const card = document.createElement('div');
+  card.className = 'stage-card';
+  card.id = `stage-card-${stage.id}`;
+
+  card.innerHTML = `
+    <div class="stage-card-header">
+      <span class="stage-badge">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--chandrapur);display:inline-block;"></span>
+        Chandrapur · Rice (Paddy) Kharif · ${stage.smwLabel}
+      </span>
+      <div class="stage-title">${stage.label}</div>
+      <div class="stage-meta">${stage.dateRange} &nbsp;·&nbsp; ${stage.duration} &nbsp;·&nbsp; Water Req: <span style="font-family:'IBM Plex Mono',monospace;color:#34d399">${stage.waterReq} mm</span></div>
+    </div>
+    <div class="stage-legend">
+      <div class="stage-legend-item">
+        <div class="stage-legend-swatch" style="background:${COLOR_WATER_REQ}"></div>
+        <span>Water Required (${stage.waterReq} mm)</span>
+      </div>
+      <div class="stage-legend-item">
+        <div class="stage-legend-swatch" style="background:${COLOR_ACTUAL}"></div>
+        <span>Actual Rainfall (Chandrapur sum)</span>
+      </div>
+    </div>
+    <div class="stage-chart-wrap"><canvas id="stage-chart-${stage.id}"></canvas></div>
+  `;
+  return card;
+}
+
+function renderStageChart(stage) {
+  const ctx = document.getElementById(`stage-chart-${stage.id}`).getContext('2d');
+
+  const actualData = STAGE_YEARS.map(yr => chandrapurStageRF(yr, stage.weeks));
+  const reqData    = STAGE_YEARS.map(() => stage.waterReq);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: STAGE_YEARS,
+      datasets: [
+        {
+          label: `Water Required (${stage.waterReq} mm)`,
+          data: reqData,
+          backgroundColor: COLOR_WATER_REQ_BG,
+          borderColor: COLOR_WATER_REQ,
+          borderWidth: 2,
+          borderRadius: 4,
+          borderSkipped: false,
+          order: 2,
+        },
+        {
+          label: 'Actual Rainfall (Chandrapur)',
+          data: actualData,
+          backgroundColor: COLOR_ACTUAL_BG,
+          borderColor: COLOR_ACTUAL,
+          borderWidth: 2,
+          borderRadius: 4,
+          borderSkipped: false,
+          order: 1,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 500, easing: 'easeOutQuart' },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          backgroundColor: '#1c2128',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          titleColor: '#7d8590',
+          bodyColor: '#e6edf3',
+          titleFont: { family: "'IBM Plex Mono'", size: 11 },
+          bodyFont: { family: "'IBM Plex Sans'", size: 12 },
+          padding: 12,
+          callbacks: {
+            title: (items) => `Year ${items[0].label}`,
+            label: (item) => {
+              const val = item.raw.toFixed(1);
+              const name = item.datasetIndex === 0 ? 'Water Required' : 'Actual Rainfall';
+              return `  ${name}: ${val} mm`;
+            },
+            afterBody: (items) => {
+              const req = items.find(i => i.datasetIndex === 0)?.raw ?? stage.waterReq;
+              const act = items.find(i => i.datasetIndex === 1)?.raw ?? 0;
+              const diff = (act - req).toFixed(1);
+              const sign = diff >= 0 ? '+' : '';
+              const status = act >= req ? '✔ Adequate' : '✘ Deficit';
+              return [`  Difference: ${sign}${diff} mm   ${status}`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawTicks: false },
+          ticks: {
+            color: '#7d8590',
+            font: { family: "'IBM Plex Mono'", size: 10 },
+            maxRotation: 0,
+            padding: 6,
+          },
+          title: {
+            display: true,
+            text: 'Year',
+            color: '#555e69',
+            font: { family: "'IBM Plex Sans'", size: 11 }
+          }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)', drawTicks: false },
+          ticks: {
+            color: '#7d8590',
+            font: { family: "'IBM Plex Mono'", size: 10 },
+            maxTicksLimit: 6,
+            padding: 6,
+            callback: v => v + ' mm'
+          },
+          title: {
+            display: true,
+            text: 'Rainfall (mm)',
+            color: '#555e69',
+            font: { family: "'IBM Plex Sans'", size: 11 }
+          },
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+}
+
+// Build and render all 5 Rice stage charts
+const stageGrid = document.getElementById('stageGrid');
+GROWTH_STAGES.forEach(stage => {
+  const card = buildStageCard(stage);
+  stageGrid.appendChild(card);
+  renderStageChart(stage);
+});
+
+// ===================================================================
+// SOYBEAN – KHARIF SEASON – CHANDRAPUR
+// 5 growth stages, sowing window SMW 24–26
+// ===================================================================
+const SOYBEAN_STAGES = [
+  {
+    id: 'soy1',
+    label: 'Germination / Sprouting',
+    weeks: [24, 25],
+    waterReq: 42.1,
+    smwLabel: 'SMW 24–25',
+    dateRange: '11 June – 24 June',
+    duration: '2 Weeks',
+  },
+  {
+    id: 'soy2',
+    label: 'Vegetative Growth',
+    weeks: [26, 27, 28, 29, 30],
+    waterReq: 112.4,
+    smwLabel: 'SMW 26–30',
+    dateRange: '25 June – 29 July',
+    duration: '5 Weeks',
+  },
+  {
+    id: 'soy3',
+    label: 'Flowering & Pod Initiation',
+    weeks: [31, 32, 33, 34],
+    waterReq: 198.0,
+    smwLabel: 'SMW 31–34',
+    dateRange: '30 July – 26 August',
+    duration: '4 Weeks',
+  },
+  {
+    id: 'soy4',
+    label: 'Pod Filling / Development',
+    weeks: [35, 36, 37],
+    waterReq: 98.0,
+    smwLabel: 'SMW 35–37',
+    dateRange: '27 August – 16 September',
+    duration: '3 Weeks',
+  },
+  {
+    id: 'soy5',
+    label: 'Maturity / Leaf Senescence',
+    weeks: [38],
+    waterReq: 25.0,
+    smwLabel: 'SMW 38',
+    dateRange: '17 September – 23 September',
+    duration: '1 Week',
+  },
+];
+
+const soybeanGrid = document.getElementById('soybeanGrid');
+SOYBEAN_STAGES.forEach(stage => {
+  const card = buildStageCard(stage);
+  soybeanGrid.appendChild(card);
+  renderStageChart(stage);
+});
+
+// ===================================================================
+// PIGEONPEA (TUR) – KHARIF SEASON – CHANDRAPUR
+// 4 growth stages, sowing window SMW 24–25, truncated at SMW 43
+// ===================================================================
+const PIGEONPEA_STAGES = [
+  {
+    id: 'pig1',
+    label: 'Germination & Early Growth',
+    weeks: [24, 25, 26],
+    waterReq: 55.2,
+    smwLabel: 'SMW 24–26',
+    dateRange: '11 June – 1 July',
+    duration: '3 Weeks',
+  },
+  {
+    id: 'pig2',
+    label: 'Active Vegetative Growth',
+    weeks: [27, 28, 29, 30, 31, 32, 33, 34, 35],
+    waterReq: 135.6,
+    smwLabel: 'SMW 27–35',
+    dateRange: '2 July – 2 September',
+    duration: '9 Weeks',
+  },
+  {
+    id: 'pig3',
+    label: 'Budding & Flowering',
+    weeks: [36, 37, 38, 39, 40, 41],
+    waterReq: 188.4,
+    smwLabel: 'SMW 36–41',
+    dateRange: '3 September – 14 October',
+    duration: '6 Weeks',
+  },
+  {
+    id: 'pig4',
+    label: 'Pod Formation (Upto Week 43)',
+    weeks: [42, 43],
+    waterReq: 142.1,
+    smwLabel: 'SMW 42–43',
+    dateRange: '15 October – 28 October',
+    duration: '2 Weeks',
+  },
+];
+
+const pigeonpeaGrid = document.getElementById('pigeonpeaGrid');
+PIGEONPEA_STAGES.forEach(stage => {
+  const card = buildStageCard(stage);
+  pigeonpeaGrid.appendChild(card);
+  renderStageChart(stage);
+});
+
+// ===================================================================
+// NAVBAR: SECTION SWITCHING
+// ===================================================================
+(function () {
+  const allTabs    = document.querySelectorAll('.nav-tab');
+  const allPanels  = document.querySelectorAll('.section-panel');
+  const hamburger  = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+
+  function showSection(sectionId) {
+    // hide all panels
+    allPanels.forEach(p => p.classList.remove('active'));
+    // show target
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.add('active');
+    // update all tabs (desktop + mobile)
+    allTabs.forEach(t => {
+      t.classList.toggle('active', t.dataset.section === sectionId);
+    });
+    // close mobile menu
+    mobileMenu.classList.remove('open');
+    // scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  allTabs.forEach(tab => {
+    tab.addEventListener('click', () => showSection(tab.dataset.section));
+  });
+
+  hamburger.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+  });
+
+  // close mobile menu on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#topNav')) {
+      mobileMenu.classList.remove('open');
+    }
+  });
+})();
 </script>
 </body>
 </html>
