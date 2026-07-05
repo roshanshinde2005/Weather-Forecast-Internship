@@ -53,6 +53,10 @@
             <span class="fnav-icon">☀️</span>
             <span class="fnav-label">Dry Spell</span>
           </button>
+          <button class="fnav-tab" data-section="sec-lgp">
+            <span class="fnav-icon">📏</span>
+            <span class="fnav-label">LGP Summary</span>
+          </button>
         </div>
 
         <!-- Divider -->
@@ -116,6 +120,9 @@
       </button>
       <button class="fnav-tab" data-section="sec-dryspell">
         ☀️ Dry Spell · Weeks 24–40
+      </button>
+      <button class="fnav-tab" data-section="sec-lgp">
+        📏 LGP Summary · ICAR-CRIDA
       </button>
     </div>
 
@@ -385,6 +392,27 @@
         </p>
       </header>
       <div class="grid" id="gridDry"></div>
+    </div>
+
+    <!-- lgp summary -->
+    <div class="section-panel" id="sec-lgp">
+      <header>
+        <div class="eyebrow">
+          Final Summary Table · ICAR-CRIDA Format · Chandrapur District
+        </div>
+        <h1>Length of Growing Period (LGP) Chandrapur District</h1>
+        <p>
+          LGP is the number of days in the crop-growing window derived from
+          the sowing week and rainfall/moisture conditions each year.
+        </p>
+      </header>
+      <div class="grid" id="gridLGP" style="grid-template-columns: 1fr">
+        <div class="card">
+          <div class="chart-wrap" style="height: 420px">
+            <canvas id="lgp-chart"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer>

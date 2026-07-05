@@ -681,7 +681,16 @@ const CCOLOR = {
   washim: "#3a7550", // forest green
 };
 
-// ===== MAI YEAR COLOURS =====
+// ===== LGP (Length of Growing Period) SUMMARY DATA — ICAR-CRIDA Format =====
+const LGP_DATA = [
+  { year: 2021, sowingWeek: 24, lgp: 119, stress: "No",         altCrop: "No", recommendation: "Normal crops" },
+  { year: 2022, sowingWeek: 25, lgp: 105, stress: "No",         altCrop: "No", recommendation: "Short-duration varieties" },
+  { year: 2023, sowingWeek: 24, lgp: 119, stress: "One-week mild", altCrop: "No", recommendation: "Normal crops" },
+  { year: 2024, sowingWeek: 24, lgp: 119, stress: "No",         altCrop: "No", recommendation: "Normal crops" },
+  { year: 2025, sowingWeek: 24, lgp: 119, stress: "No",         altCrop: "No", recommendation: "Normal crops" },
+];
+
+
 const MAI_YEAR_COLOR = {
   2021: "#2778b0", // sky blue
   2022: "#b85520", // terracotta

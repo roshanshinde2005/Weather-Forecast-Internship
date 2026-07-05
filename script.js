@@ -872,6 +872,80 @@ DRY_SPELL_YEARS.forEach(year => {
   renderDryChart(year);
 });
 
+// chart - 7 LGP (Length of Growing Period) summary — single bar chart, all years
+
+function renderLGPChart() {
+  const ctx = document.getElementById('lgp-chart').getContext('2d');
+  const labels = LGP_DATA.map(d => d.year);
+  const values = LGP_DATA.map(d => d.lgp);
+  const color = CCOLOR.chandrapur;
+
+  // Slightly distinguish the 2022 short-LGP year and 2023 mild-stress year for a quick visual cue
+  const barColors = LGP_DATA.map(d => {
+    if (d.stress !== 'No') return '#c4436b';       // stress year
+    if (d.recommendation !== 'Normal crops') return '#9e5a2b'; // short-duration advisory year
+    return color;
+  });
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'LGP (days)',
+        data: values,
+        backgroundColor: barColors,
+        borderRadius: 6,
+        borderSkipped: false,
+        maxBarThickness: 70,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            title: (items) => `Year ${items[0].label}`,
+            label: (item) => {
+              const d = LGP_DATA[item.dataIndex];
+              return `LGP: ${d.lgp} days`;
+            },
+            afterLabel: (item) => {
+              const d = LGP_DATA[item.dataIndex];
+              return [
+                `Sowing Week: ${d.sowingWeek}`,
+                `Stress: ${d.stress}`,
+                `Alternate Crop: ${d.altCrop}`,
+                `Recommendation: ${d.recommendation}`,
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#8c7d6e', font: { family: "'JetBrains Mono'", size: 11 } },
+          title: { display: true, text: 'Year', color: '#a09080', font: { family: "'Inter'", size: 11 } }
+        },
+        y: {
+          beginAtZero: true,
+          suggestedMax: 130,
+          grid: { color: 'rgba(30,20,10,0.06)', drawTicks: false },
+          ticks: { color: '#8c7d6e', font: { family: "'JetBrains Mono'", size: 10 } },
+          title: { display: true, text: 'LGP (days)', color: '#a09080', font: { family: "'Inter'", size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+renderLGPChart();
+
 // ===================================================================
 // FLOATING NAV — Aceternity UI FloatingNav behaviour (vanilla JS)
 // Shows when scrolling UP past 5% of page, hides when scrolling DOWN
